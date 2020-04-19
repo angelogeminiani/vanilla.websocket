@@ -1,7 +1,6 @@
 import EventEmitter from "../events/EventEmitter";
 import console from "../commons/console";
 import lang from "../commons/lang";
-import {ROOT} from "../launcher";
 import random from "../commons/random";
 
 // ------------------------------------------------------------------------
@@ -19,7 +18,7 @@ const FLD_REQUEST_UUID = "request_uuid";
 const FLD_REQUEST_UUID_HANDLED = "request_uuid_handled";
 const FLD_REQUEST_UUID_TIMEOUT = 10 * 1000; // 10 seconds timeout
 
-const root: any = ROOT;
+const root: any = window;
 
 class WebSocketChannel
     extends EventEmitter {
@@ -229,10 +228,11 @@ class WebSocketChannel
 
     private _on_error(ev: Event): void {
         ev.preventDefault();
-        const str_err: string = lang.toString(ev);
-        console.error('WebSocketChannel._on_error', str_err);
+        ev.stopImmediatePropagation();
+        const str_err: string = "Connection Refused from: " + this._latest_params["host"];
+        // console.error('WebSocketChannel._on_error', str_err);
         this.emit(EVENT_ERROR, str_err);
     }
 }
 
-export {WebSocketChannel, EVENT_CLOSE, EVENT_MESSAGE, EVENT_OPEN}
+export {WebSocketChannel, EVENT_ERROR, EVENT_CLOSE, EVENT_MESSAGE, EVENT_OPEN}
