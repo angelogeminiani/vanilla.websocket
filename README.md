@@ -1,6 +1,9 @@
 # vanilla.websocket
 Vanilla Websocket is a pure javascript no dependencies websocket client with callbacks.
 
+## License
+MIT
+
 ## Project Directories
 
 ### client
