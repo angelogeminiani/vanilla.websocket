@@ -1,7 +1,7 @@
-#Vanilla.Websocket Test Go Server
+# Vanilla.Websocket Test Go Server
 
 This server is written in Go and is based on awesome **lygo** framework. 
 
-##Dependencies
+## Dependencies
 `go get -u github.com/botikasm/lygo`
 `go get -u github.com/cbroglie/mustache`
