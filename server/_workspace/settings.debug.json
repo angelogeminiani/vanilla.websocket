@@ -1,0 +1,52 @@
+{
+  "mode": "debug",
+  "server": {
+    "hosts": [
+      {
+        "addr": ":80",
+        "tls": false,
+        "websocket": {
+          "enabled": true
+        }
+      },
+      {
+        "addr": ":443",
+        "tls": true,
+        "ssl_cert": "{{workspace}}/certs/cert.pem",
+        "ssl_key": "{{workspace}}/certs/cert.key",
+        "websocket": {
+          "enabled": true
+        }
+      }
+    ],
+    "enable_request_id": true,
+    "prefork": false,
+    "static": [
+      {
+        "enabled": true,
+        "prefix": "/",
+        "root": "{{workspace}}/www",
+        "index": "",
+        "compress": true
+      }
+    ],
+    "compression": {
+      "enabled": false,
+      "level": 0
+    },
+    "limiter": {
+      "enabled": false,
+      "timeout": 30,
+      "max": 10
+    }
+  },
+  "database": {
+    "endpoints": [
+      "http://localhost:8529"
+    ],
+    "authentication": {
+      "username": "root",
+      "password": "xxxx"
+    }
+  }
+}

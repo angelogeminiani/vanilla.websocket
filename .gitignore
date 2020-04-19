@@ -2,3 +2,6 @@ client/.idea
 vanilla.websocket.client.iml
 client/node_modules
 package-lock.json
+misc.xml
+server/.idea
+logging.log
