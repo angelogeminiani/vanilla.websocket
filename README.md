@@ -6,11 +6,11 @@ MIT
 
 ## Project Directories
 
-### client
+### ./client
 Contains javascript client sources and builds.
 Here is what you are looking for if you are a javascript/typescript developer.
 
-### server
+### ./server
 This is just a test server written in Go. 
 This directory may be not interesting for you if you are looking just for a javascript websocket client.
 I used this Go server for testing porpuse because I ❤️ Go.
