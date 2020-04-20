@@ -6,6 +6,7 @@ import (
 	"github.com/angelogeminiani/vanilla.websocket/server/application/application_types"
 	"github.com/botikasm/lygo/base/lygo_conv"
 	"github.com/botikasm/lygo/base/lygo_events"
+	"github.com/botikasm/lygo/base/lygo_json"
 	"github.com/botikasm/lygo/ext/lygo_http/lygo_http_server"
 )
 
@@ -27,10 +28,9 @@ type Message struct {
 }
 
 type MessagePayload struct {
-	AppToken  string      `json:"app_token"`
-	Namespace string      `json:"namespace"`
-	Function  string      `json:"function"`
-	Params    interface{} `json:"params"`
+	AppToken string      `json:"app_token"`
+	Command  string      `json:"command"`
+	Params   interface{} `json:"params"`
 }
 type MessageResponse struct {
 	Error string        `json:"error"`
@@ -145,11 +145,11 @@ func (instance *MessageHandler) handleWs(payload *lygo_http_server.HttpWebsocket
 }
 
 func (instance *MessageHandler) execute(message *Message) interface{} {
-	method := message.Payload.Namespace + "." + message.Payload.Function
-	switch method {
+	command := message.Payload.Command
+	switch command {
 	// ACCOUNT
-	case "user.init":
-
+	case "echo":
+		return lygo_json.Stringify(message)
 	case "user.login":
 
 	case "user.people":
@@ -161,8 +161,8 @@ func (instance *MessageHandler) execute(message *Message) interface{} {
 	case "user.update_business_card":
 
 	default:
-		return errors.New("Unknown command: " + method)
+		return errors.New("Unknown command: " + command)
 
 	}
-	return errors.New("Unknown command: " + method)
+	return errors.New("Unknown command: " + command)
 }
