@@ -3,7 +3,7 @@
         let vws = window["__vws"];
         if (!!vws) {
             log("info", "Vanilla.Websocket", "version: " + vws.version);
-            const client = vws.create("ws://localhost:8080/websocket");
+            const client = vws.create("ws://localhost:80/");
             log("info", "Vanilla.Websocket client", "host: " + client.host);
 
             // handle connection error

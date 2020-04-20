@@ -6,3 +6,5 @@ This server is written in Go and is based on awesome **lygo** framework.
 `go get -u github.com/botikasm/lygo`
 
 `go get -u github.com/cbroglie/mustache`
+
+`go get -u github.com/gofiber/...`

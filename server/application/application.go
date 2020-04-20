@@ -17,7 +17,7 @@ type Application struct {
 	settings *application_settings.ApplicationSettings
 
 	// internal controllers
-	events *lygo_events.Emitter
+	events  *lygo_events.Emitter
 	runtime *application_runtime.ApplicationRuntime
 	// database *application_settings.ApplicationDatabase
 	// server   *application_settings.ApplicationServer
@@ -34,7 +34,7 @@ func NewApplication(mode string) (*Application, error) {
 	if nil == err {
 		instance.settings = settings
 		if nil != settings {
-			instance.runtime = application_runtime.NewApplicationRuntime(settings)
+			instance.runtime, err = application_runtime.NewApplicationRuntime(settings)
 		} else {
 			err = application_types.MismatchConfigurationError
 		}
@@ -47,27 +47,23 @@ func NewApplication(mode string) (*Application, error) {
 // ---------------------------------------------------------------------------------------------------------------------
 
 func (instance *Application) Start() error {
-	if nil != instance {
+	if nil != instance && nil != instance.runtime {
 		// start application server
-		instance.runtime.Start()
-		return nil
+		return instance.runtime.Start()
 	}
 	return application_types.PanicSystemError
 }
 
 func (instance *Application) Close() error {
-	if nil != instance {
-		var err error
-
-		return err
+	if nil != instance && nil != instance.runtime {
+		return instance.runtime.Close()
 	}
 	return application_types.PanicSystemError
 }
 
 func (instance *Application) Join() error {
-	if nil != instance {
-
-		return nil
+	if nil != instance && nil != instance.runtime {
+		return instance.runtime.Join()
 	}
 	return application_types.PanicSystemError
 }
