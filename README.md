@@ -57,3 +57,5 @@ Explore the [demo website](https://github.com/angelogeminiani/vanilla.websocket/
 ## Author
 This project is actively mantained by [Gian Angelo Geminiani](https://gianangelogeminiani.me)
 
+## Special Mention
+Thank you to my dear friend [Antonio Di Pinto](https://github.com/antoniodipinto) for his [Go websocket server](https://github.com/antoniodipinto/ikisocket).
