@@ -9,6 +9,7 @@ class SocketService
     private readonly _params: any;
 
     private _socket: WebSocketChannel; // lazy initialized
+    private _is_connected: boolean;
 
     // ------------------------------------------------------------------------
     //  c o n s t r u c t o r
@@ -23,6 +24,7 @@ class SocketService
         } else {
             this._params = params || {};
         }
+        this._is_connected = false;
     }
 
     // ------------------------------------------------------------------------
@@ -31,6 +33,10 @@ class SocketService
 
     public get host(): string {
         return !!this._params ? this._params["host"] || "" : "";
+    }
+
+    public get isConnected(): boolean {
+        return this._is_connected;
     }
 
     public send(message: any, callback?: any): void {
@@ -87,10 +93,12 @@ class SocketService
     }
 
     private onOpen(): void {
+        this._is_connected = true;
         this.emit(EVENT_OPEN);
     }
 
     private onClose(): void {
+        this._is_connected = false;
         this.emit(EVENT_CLOSE);
     }
 
@@ -99,6 +107,7 @@ class SocketService
     }
 
     private onError(error: any): void {
+        this._is_connected = false;
         this.emit(EVENT_ERROR, error);
     }
 }

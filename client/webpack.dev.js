@@ -7,7 +7,7 @@ module.exports = merge(common, {
     mode: "development",
 
     entry: {
-        "bundle": path.join(__dirname, "./src/launcher.ts")
+        "vws": path.join(__dirname, "./src/launcher.ts")
     },
 
     devtool: "source-map"

@@ -7,7 +7,7 @@ module.exports = merge(common, {
     mode: "production",
 
     entry: {
-        "bundle.min": path.join(__dirname, "./src/launcher.ts")
+        "vws.min": path.join(__dirname, "./src/launcher.ts")
     },
 
     optimization: {

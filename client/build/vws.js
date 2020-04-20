@@ -1075,6 +1075,7 @@ var SocketService = /** @class */ (function (_super) {
         else {
             _this._params = params || {};
         }
+        _this._is_connected = false;
         return _this;
     }
     Object.defineProperty(SocketService.prototype, "host", {
@@ -1083,6 +1084,13 @@ var SocketService = /** @class */ (function (_super) {
         // ------------------------------------------------------------------------
         get: function () {
             return !!this._params ? this._params["host"] || "" : "";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SocketService.prototype, "isConnected", {
+        get: function () {
+            return this._is_connected;
         },
         enumerable: true,
         configurable: true
@@ -1138,15 +1146,18 @@ var SocketService = /** @class */ (function (_super) {
         configurable: true
     });
     SocketService.prototype.onOpen = function () {
+        this._is_connected = true;
         this.emit(_WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_OPEN"]);
     };
     SocketService.prototype.onClose = function () {
+        this._is_connected = false;
         this.emit(_WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_CLOSE"]);
     };
     SocketService.prototype.onMessage = function (data) {
         this.emit(_WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_MESSAGE"], data);
     };
     SocketService.prototype.onError = function (error) {
+        this._is_connected = false;
         this.emit(_WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_ERROR"], error);
     };
     return SocketService;
@@ -1417,4 +1428,4 @@ var WebSocketChannel = /** @class */ (function (_super) {
 /***/ })
 
 /******/ });
-//# sourceMappingURL=bundle.js.map
+//# sourceMappingURL=vws.js.map

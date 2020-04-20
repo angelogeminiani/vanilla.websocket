@@ -2,6 +2,17 @@
 
 ## How to Use
 
+### HTML
+
+Just download binary version form build folder and add a reference 
+to Vanilla.Websocket. 
+
+```html 
+<script type="text/javascript" src="../vendor/vwf/vmf.min.js"></script>
+```
+
+### Javascript
+
 Below is a simple example on Vanilla.Websocket usage:
 
 ```javascript
