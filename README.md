@@ -51,6 +51,9 @@ try {
      }
 ```
 
+## Samples
+Explore the demo html page or [client][https://github.com/angelogeminiani/vanilla.websocket/tree/master/client] directory for further details.
+
 ## Author
 This project is actively mantained by [Gian Angelo Geminiani](https://gianangelogeminiani.me)
 
