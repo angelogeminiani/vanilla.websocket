@@ -1,6 +1,6 @@
-#Vanilla.Websocket client
+# Vanilla.Websocket client
 
-##How to Use
+## How to Use
 
 Below is a simple example on Vanilla.Websocket usage:
 
@@ -67,7 +67,10 @@ const client = vws.create("ws://localhost:8080/websocket");
 ``` 
 Now you are ready to handle events or to send a message.
 
+## Events
+
 Vanilla.Websocket emits some events:
 * on_error: When an error occurred in connection. Usually because endpoint is not responding.
 * on_message: When message was sent to client. Usually this event is handled to receive server messages. 
 * on_close: Connection closed
+
