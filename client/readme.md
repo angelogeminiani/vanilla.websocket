@@ -4,7 +4,7 @@
 
 ### HTML
 
-Just download binary version form build folder and add a reference 
+Just download binary version form [build](https://github.com/angelogeminiani/vanilla.websocket/tree/master/client/build) folder and add a reference 
 to Vanilla.Websocket. 
 
 ```html 
@@ -83,5 +83,11 @@ Now you are ready to handle events or to send a message.
 Vanilla.Websocket emits some events:
 * on_error: When an error occurred in connection. Usually because endpoint is not responding.
 * on_message: When message was sent to client. Usually this event is handled to receive server messages. 
+* on_open: Connection opened
 * on_close: Connection closed
+
+## Properties
+* isConnected: Boolean value that is tru when client is connected.
+
+
 
