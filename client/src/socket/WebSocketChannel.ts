@@ -1,13 +1,10 @@
 import EventEmitter from "../events/EventEmitter";
-import console from "../commons/console";
 import lang from "../commons/lang";
 import random from "../commons/random";
 
-// ------------------------------------------------------------------------
-//                      c o n s t a n t s
-// ------------------------------------------------------------------------
 
 const DEF_HOST = 'ws://localhost:8181/websocket';
+const DEF_UID = 'mebot_web';
 
 const EVENT_OPEN: string = 'on_open';
 const EVENT_CLOSE: string = 'on_close';
@@ -18,8 +15,6 @@ const FLD_REQUEST_UUID = "request_uuid";
 const FLD_REQUEST_UUID_HANDLED = "request_uuid_handled";
 const FLD_REQUEST_UUID_TIMEOUT = 10 * 1000; // 10 seconds timeout
 
-const root: any = window;
-
 class WebSocketChannel
     extends EventEmitter {
 
@@ -27,25 +22,24 @@ class WebSocketChannel
     //                      f i e l d s
     // ------------------------------------------------------------------------
 
-    private _host: string;
+    private readonly _host: string;
     private _initialized: boolean;
     private _active: boolean;
     private _web_socket: WebSocket | null;
     private _callback_pool: any;
-    private _latest_params: any;
-
     // ------------------------------------------------------------------------
     //                      c o n s t r u c t o r
     // ------------------------------------------------------------------------
 
     /**
      * Creates a WebSocket wrapper
+     * @param params "{host:'ws://localhost:8181/websocket'}"
      */
-    constructor() {
+    constructor(params?: any) {
         super();
         this._initialized = false;
         this._active = false;
-        this._host = DEF_HOST;
+        this._host = !!params ? params.host || DEF_HOST : DEF_HOST;
         this._callback_pool = {}; // contains registered callbacks
     }
 
@@ -62,21 +56,31 @@ class WebSocketChannel
             if (this._active) {
                 lang.funcInvoke(callback, true);
             } else {
+                // timeout for ready status  (3 seconds)
+                lang.funcDelay(() => {
+                    if (!this._active) {
+                        this.off(this); // clear buffer
+                        lang.funcInvoke(callback, false, "timeout");
+                        // reset socket status
+                        this.free()
+                    }
+                }, 3 * 1000);
+                this.off(this); // clear buffer
                 this.on(this, EVENT_OPEN, () => {
-                    this.off(this);
+                    this.off(this); // clear buffer
                     lang.funcInvoke(callback, true);
                 });
             }
         } else {
             // exit not ready
-            lang.funcInvoke(callback, false);
+            lang.funcInvoke(callback, false, "not initialized");
         }
     }
 
     public reset(): void {
         this._callback_pool = {};
         this.close();
-        this.open(this._latest_params);
+        this.open();
     }
 
     /**
@@ -97,28 +101,20 @@ class WebSocketChannel
         return this._host;
     }
 
-    /**
-     * Open websocket native connection
-     * @param params string|object
-     */
-    public open(params: any): void {
-        if (!!params) {
-            if (lang.isString(params)) {
-                params = {host: params};
+    public open(): WebSocketChannel {
+        if (!this._web_socket) {
+            try {
+                this._web_socket = this.createWs();
+                if (this.handle(this._web_socket)) {
+                    this._initialized = true;
+                } else {
+                    this._initialized = false;
+                }
+            } catch (err) {
+                console.error('WebSocketChannel.open', err);
             }
-            this._latest_params = params
-            this._host = params.host || DEF_HOST;
         }
-        try {
-            this._web_socket = this.createWs();
-            if (this.handle(this._web_socket)) {
-                this._initialized = true;
-            } else {
-                this._initialized = false;
-            }
-        } catch (err) {
-            console.error('WebSocketChannel.open', err);
-        }
+        return this;
     }
 
     public close(): void {
@@ -126,10 +122,8 @@ class WebSocketChannel
             if (this._active) {
                 this._initialized = false;
                 this._active = false;
-                if (!!this._web_socket) {
-                    this._web_socket.close();
-                    this.free();
-                }
+                // close and free socket
+                this.free();
             }
         } catch (err) {
             console.error('WebSocketChannel.close', err);
@@ -169,12 +163,17 @@ class WebSocketChannel
     // ------------------------------------------------------------------------
 
     private createWs(): WebSocket {
-        const WS_native: any = root['WebSocket'] || root['MozWebSocket'];
+        const WS_native: any = lang.window['WebSocket'] || lang.window['MozWebSocket'];
         return new WS_native(this._host);
     }
 
     private free(): void {
         if (!!this._web_socket) {
+            try {
+                this._web_socket.close();
+            } catch (err) {
+                console.debug("WebSocketChannel.free", err);
+            }
             this._web_socket = null;
         }
     }
@@ -228,11 +227,10 @@ class WebSocketChannel
 
     private _on_error(ev: Event): void {
         ev.preventDefault();
-        ev.stopImmediatePropagation();
-        const str_err: string = "Connection Refused from: " + this._latest_params["host"];
-        // console.error('WebSocketChannel._on_error', str_err);
+        const str_err: string = lang.toString(ev);
+        console.error('WebSocketChannel._on_error', str_err);
         this.emit(EVENT_ERROR, str_err);
     }
 }
 
-export {WebSocketChannel, EVENT_ERROR, EVENT_CLOSE, EVENT_MESSAGE, EVENT_OPEN}
+export {WebSocketChannel, EVENT_CLOSE, EVENT_MESSAGE, EVENT_OPEN, EVENT_ERROR}

@@ -40,9 +40,11 @@ class SocketService
     }
 
     public send(message: any, callback?: any): void {
-        this.socket.ready((is_ready: boolean) => {
+        this.socket.open().ready((is_ready: boolean, error: any) => {
             if (is_ready) {
                 this.socket.send(message, callback);
+            } else {
+                lang.funcInvoke(callback, {"error": error})
             }
         });
     }
@@ -81,13 +83,12 @@ class SocketService
         if (!this._socket) {
             // creates new socket
             this._socket = new WebSocketChannel();
+
             this._socket.on(this, EVENT_OPEN, this.onOpen);
             this._socket.on(this, EVENT_CLOSE, this.onClose);
             this._socket.on(this, EVENT_MESSAGE, this.onMessage);
             this._socket.on(this, EVENT_ERROR, this.onError);
 
-            // open channel
-            this._socket.open(this._params);
         }
         return this._socket;
     }

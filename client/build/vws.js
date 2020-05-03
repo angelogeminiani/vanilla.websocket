@@ -400,9 +400,16 @@ var langClass = /** @class */ (function () {
     // ------------------------------------------------------------------------
     function langClass() {
     }
-    // ------------------------------------------------------------------------
-    //                      p u b l i c
-    // ------------------------------------------------------------------------
+    Object.defineProperty(langClass.prototype, "window", {
+        // ------------------------------------------------------------------------
+        //                      p u b l i c
+        // ------------------------------------------------------------------------
+        get: function () {
+            return window;
+        },
+        enumerable: true,
+        configurable: true
+    });
     langClass.prototype.parse = function (value) {
         try {
             if (this.isString(value)) {
@@ -1097,9 +1104,12 @@ var SocketService = /** @class */ (function (_super) {
     });
     SocketService.prototype.send = function (message, callback) {
         var _this = this;
-        this.socket.ready(function (is_ready) {
+        this.socket.open().ready(function (is_ready, error) {
             if (is_ready) {
                 _this.socket.send(message, callback);
+            }
+            else {
+                _commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].funcInvoke(callback, { "error": error });
             }
         });
     };
@@ -1137,8 +1147,6 @@ var SocketService = /** @class */ (function (_super) {
                 this._socket.on(this, _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_CLOSE"], this.onClose);
                 this._socket.on(this, _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_MESSAGE"], this.onMessage);
                 this._socket.on(this, _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_ERROR"], this.onError);
-                // open channel
-                this._socket.open(this._params);
             }
             return this._socket;
         },
@@ -1174,20 +1182,19 @@ var SocketService = /** @class */ (function (_super) {
 /*!****************************************!*\
   !*** ./src/socket/WebSocketChannel.ts ***!
   \****************************************/
-/*! exports provided: WebSocketChannel, EVENT_ERROR, EVENT_CLOSE, EVENT_MESSAGE, EVENT_OPEN */
+/*! exports provided: WebSocketChannel, EVENT_CLOSE, EVENT_MESSAGE, EVENT_OPEN, EVENT_ERROR */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebSocketChannel", function() { return WebSocketChannel; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT_ERROR", function() { return EVENT_ERROR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT_CLOSE", function() { return EVENT_CLOSE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT_MESSAGE", function() { return EVENT_MESSAGE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT_OPEN", function() { return EVENT_OPEN; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EVENT_ERROR", function() { return EVENT_ERROR; });
 /* harmony import */ var _events_EventEmitter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../events/EventEmitter */ "./src/events/EventEmitter.ts");
-/* harmony import */ var _commons_console__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../commons/console */ "./src/commons/console.ts");
-/* harmony import */ var _commons_lang__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../commons/lang */ "./src/commons/lang.ts");
-/* harmony import */ var _commons_random__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../commons/random */ "./src/commons/random.ts");
+/* harmony import */ var _commons_lang__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../commons/lang */ "./src/commons/lang.ts");
+/* harmony import */ var _commons_random__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../commons/random */ "./src/commons/random.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1204,11 +1211,8 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
-// ------------------------------------------------------------------------
-//                      c o n s t a n t s
-// ------------------------------------------------------------------------
 var DEF_HOST = 'ws://localhost:8181/websocket';
+var DEF_UID = 'mebot_web';
 var EVENT_OPEN = 'on_open';
 var EVENT_CLOSE = 'on_close';
 var EVENT_MESSAGE = 'on_message';
@@ -1216,7 +1220,6 @@ var EVENT_ERROR = 'on_error';
 var FLD_REQUEST_UUID = "request_uuid";
 var FLD_REQUEST_UUID_HANDLED = "request_uuid_handled";
 var FLD_REQUEST_UUID_TIMEOUT = 10 * 1000; // 10 seconds timeout
-var root = window;
 var WebSocketChannel = /** @class */ (function (_super) {
     __extends(WebSocketChannel, _super);
     // ------------------------------------------------------------------------
@@ -1224,12 +1227,13 @@ var WebSocketChannel = /** @class */ (function (_super) {
     // ------------------------------------------------------------------------
     /**
      * Creates a WebSocket wrapper
+     * @param params "{host:'ws://localhost:8181/websocket'}"
      */
-    function WebSocketChannel() {
+    function WebSocketChannel(params) {
         var _this = _super.call(this) || this;
         _this._initialized = false;
         _this._active = false;
-        _this._host = DEF_HOST;
+        _this._host = !!params ? params.host || DEF_HOST : DEF_HOST;
         _this._callback_pool = {}; // contains registered callbacks
         return _this;
     }
@@ -1244,24 +1248,34 @@ var WebSocketChannel = /** @class */ (function (_super) {
         var _this = this;
         if (this._initialized) {
             if (this._active) {
-                _commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].funcInvoke(callback, true);
+                _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].funcInvoke(callback, true);
             }
             else {
+                // timeout for ready status  (3 seconds)
+                _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].funcDelay(function () {
+                    if (!_this._active) {
+                        _this.off(_this); // clear buffer
+                        _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].funcInvoke(callback, false, "timeout");
+                        // reset socket status
+                        _this.free();
+                    }
+                }, 3 * 1000);
+                this.off(this); // clear buffer
                 this.on(this, EVENT_OPEN, function () {
-                    _this.off(_this);
-                    _commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].funcInvoke(callback, true);
+                    _this.off(_this); // clear buffer
+                    _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].funcInvoke(callback, true);
                 });
             }
         }
         else {
             // exit not ready
-            _commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].funcInvoke(callback, false);
+            _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].funcInvoke(callback, false, "not initialized");
         }
     };
     WebSocketChannel.prototype.reset = function () {
         this._callback_pool = {};
         this.close();
-        this.open(this._latest_params);
+        this.open();
     };
     Object.defineProperty(WebSocketChannel.prototype, "initialized", {
         /**
@@ -1290,44 +1304,34 @@ var WebSocketChannel = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    /**
-     * Open websocket native connection
-     * @param params string|object
-     */
-    WebSocketChannel.prototype.open = function (params) {
-        if (!!params) {
-            if (_commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].isString(params)) {
-                params = { host: params };
+    WebSocketChannel.prototype.open = function () {
+        if (!this._web_socket) {
+            try {
+                this._web_socket = this.createWs();
+                if (this.handle(this._web_socket)) {
+                    this._initialized = true;
+                }
+                else {
+                    this._initialized = false;
+                }
             }
-            this._latest_params = params;
-            this._host = params.host || DEF_HOST;
-        }
-        try {
-            this._web_socket = this.createWs();
-            if (this.handle(this._web_socket)) {
-                this._initialized = true;
-            }
-            else {
-                this._initialized = false;
+            catch (err) {
+                console.error('WebSocketChannel.open', err);
             }
         }
-        catch (err) {
-            _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].error('WebSocketChannel.open', err);
-        }
+        return this;
     };
     WebSocketChannel.prototype.close = function () {
         try {
             if (this._active) {
                 this._initialized = false;
                 this._active = false;
-                if (!!this._web_socket) {
-                    this._web_socket.close();
-                    this.free();
-                }
+                // close and free socket
+                this.free();
             }
         }
         catch (err) {
-            _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].error('WebSocketChannel.close', err);
+            console.error('WebSocketChannel.close', err);
         }
     };
     WebSocketChannel.prototype.send = function (message, callback) {
@@ -1337,35 +1341,41 @@ var WebSocketChannel = /** @class */ (function (_super) {
                 && !!this._web_socket
                 && this._web_socket.readyState === this._web_socket.OPEN) {
                 if (!!callback) {
-                    var callback_uuid_1 = _commons_random__WEBPACK_IMPORTED_MODULE_3__["default"].guid();
+                    var callback_uuid_1 = _commons_random__WEBPACK_IMPORTED_MODULE_2__["default"].guid();
                     message[FLD_REQUEST_UUID] = callback_uuid_1;
                     this._callback_pool[callback_uuid_1] = callback;
                     // set timeout
-                    _commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].funcDelay(function () {
+                    _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].funcDelay(function () {
                         delete _this._callback_pool[callback_uuid_1];
-                        _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].debug("WebSocketChannel.send", "timeout removed " + callback_uuid_1);
+                        console.debug("WebSocketChannel.send", "timeout removed " + callback_uuid_1);
                     }, FLD_REQUEST_UUID_TIMEOUT);
                 }
                 // ready to send
-                this._web_socket.send(_commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].toString(message));
+                this._web_socket.send(_commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].toString(message));
             }
             else {
-                _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].warn('WebSocketChannel.send', 'Socket is not ready to send message.', this._web_socket, message);
+                console.warn('WebSocketChannel.send', 'Socket is not ready to send message.', this._web_socket, message);
             }
         }
         catch (err) {
-            _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].error('WebSocketChannel.send', err);
+            console.error('WebSocketChannel.send', err);
         }
     };
     // ------------------------------------------------------------------------
     //                      p r i v a t e
     // ------------------------------------------------------------------------
     WebSocketChannel.prototype.createWs = function () {
-        var WS_native = root['WebSocket'] || root['MozWebSocket'];
+        var WS_native = _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].window['WebSocket'] || _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].window['MozWebSocket'];
         return new WS_native(this._host);
     };
     WebSocketChannel.prototype.free = function () {
         if (!!this._web_socket) {
+            try {
+                this._web_socket.close();
+            }
+            catch (err) {
+                console.debug("WebSocketChannel.free", err);
+            }
             this._web_socket = null;
         }
     };
@@ -1378,7 +1388,7 @@ var WebSocketChannel = /** @class */ (function (_super) {
             return true;
         }
         else {
-            _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].warn('WebSocketChannel.handle', 'WebSocket not found', ws);
+            console.warn('WebSocketChannel.handle', 'WebSocket not found', ws);
             return false;
         }
     };
@@ -1394,12 +1404,12 @@ var WebSocketChannel = /** @class */ (function (_super) {
         try {
             var origin_1 = ev.origin;
             var ports = ev.ports;
-            var data = _commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].parse(ev.data);
+            var data = _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].parse(ev.data);
             if (!!data[FLD_REQUEST_UUID]) {
                 var callback_uuid = data[FLD_REQUEST_UUID];
                 if (!!this._callback_pool[callback_uuid]) {
                     var f = this._callback_pool[callback_uuid];
-                    if (_commons_lang__WEBPACK_IMPORTED_MODULE_2__["default"].isFunction(f)) {
+                    if (_commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].isFunction(f)) {
                         f(data);
                     }
                 }
@@ -1410,14 +1420,13 @@ var WebSocketChannel = /** @class */ (function (_super) {
             this.emit(EVENT_MESSAGE, data);
         }
         catch (err) {
-            _commons_console__WEBPACK_IMPORTED_MODULE_1__["default"].error("WebSocketChannel._on_message", err);
+            console.error("WebSocketChannel._on_message", err);
         }
     };
     WebSocketChannel.prototype._on_error = function (ev) {
         ev.preventDefault();
-        ev.stopImmediatePropagation();
-        var str_err = "Connection Refused from: " + this._latest_params["host"];
-        // console.error('WebSocketChannel._on_error', str_err);
+        var str_err = _commons_lang__WEBPACK_IMPORTED_MODULE_1__["default"].toString(ev);
+        console.error('WebSocketChannel._on_error', str_err);
         this.emit(EVENT_ERROR, str_err);
     };
     return WebSocketChannel;
