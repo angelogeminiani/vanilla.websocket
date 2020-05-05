@@ -8,7 +8,7 @@ Just download binary version form [build](https://github.com/angelogeminiani/van
 to Vanilla.Websocket. 
 
 ```html 
-<script type="text/javascript" src="../vendor/vwf/vmf.min.js"></script>
+<script type="text/javascript" src="../vendor/vws/vws.min.js"></script>
 ```
 
 ### Javascript
