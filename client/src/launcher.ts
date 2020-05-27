@@ -8,7 +8,7 @@ import lang from "./commons/lang";
 // ------------------------------------------------------------------------
 
 const DEBUG: boolean = false;
-const VERSION: string = "1.0.0";
+const VERSION: string = "1.0.1";
 const UID: string = "__vws"
 const ROOT: any = window
 

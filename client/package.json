@@ -1,6 +1,6 @@
 {
   "name": "vanilla.websocket",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pure websocket client with no dependencies and callback support",
   "main": "src/launch.ts",
   "scripts": {

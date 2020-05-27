@@ -954,7 +954,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 //                      c o n s t a n t s
 // ------------------------------------------------------------------------
 var DEBUG = false;
-var VERSION = "1.0.0";
+var VERSION = "1.0.1";
 var UID = "__vws";
 var ROOT = window;
 /**

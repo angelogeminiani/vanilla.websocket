@@ -2,8 +2,10 @@
     try {
         let vws = window["__vws"];
         if (!!vws) {
+            const URL = "ws://localhost:80/websocket"
+
             log("info", "Vanilla.Websocket", "version: " + vws.version);
-            const client = vws.create("ws://localhost:80/websocket");
+            const client = vws.create(URL);
             log("info", "Vanilla.Websocket client", "host: " + client.host);
 
             // handle connection error
@@ -46,6 +48,21 @@
                 "params": ["Hello Vanilla.Websocket"]
             }
         };
+
+        // ANOTHER KIND OF MESSAGE
+        // MESSAGES DEPENDS ON SERVER SIDE IMPLEMENTATION
+        /*
+        const message = {
+            "uid": "2b423c92-11ef-33e6-5537-970bff1e4177",
+            "lang": "it",
+            "payload": {
+                "app_token": "iuhdiu87w23ruh897dfyc2w3r",
+                "namespace": "system",
+                "function": "ping",
+                "params": null,
+            },
+        };*/
+
         // send message to server
         client.send(message, (full_response) => {
             const response = full_response["response"];
