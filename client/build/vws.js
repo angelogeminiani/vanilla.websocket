@@ -1142,7 +1142,7 @@ var SocketService = /** @class */ (function (_super) {
         get: function () {
             if (!this._socket) {
                 // creates new socket
-                this._socket = new _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["WebSocketChannel"]();
+                this._socket = new _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["WebSocketChannel"](this._params);
                 this._socket.on(this, _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_OPEN"], this.onOpen);
                 this._socket.on(this, _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_CLOSE"], this.onClose);
                 this._socket.on(this, _WebSocketChannel__WEBPACK_IMPORTED_MODULE_1__["EVENT_MESSAGE"], this.onMessage);

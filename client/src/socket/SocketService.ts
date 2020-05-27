@@ -82,7 +82,7 @@ class SocketService
     private get socket(): WebSocketChannel {
         if (!this._socket) {
             // creates new socket
-            this._socket = new WebSocketChannel();
+            this._socket = new WebSocketChannel(this._params);
 
             this._socket.on(this, EVENT_OPEN, this.onOpen);
             this._socket.on(this, EVENT_CLOSE, this.onClose);
