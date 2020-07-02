@@ -40,7 +40,7 @@
 
     function send(client) {
         // creates a message for the server
-        const message = {
+        let message = {
             "uid": "test_message",
             "payload": {
                 "app_token": "iuhdiu87w23ruh897dfyc2w3r",
@@ -62,10 +62,10 @@
                 "params": null,
             },
         };*/
-
+         log("info", "Sending message", message)
         // send message to server
         client.send(message, (full_response) => {
-            const response = full_response["response"];
+            const response = full_response["response"]||{};
             const error = response["error"];
             if (!!error) {
                 log("error", "Vanilla.Websocket client", error);
